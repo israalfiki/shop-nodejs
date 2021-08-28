@@ -3,7 +3,7 @@ const Product = require('../models/product');
 
 exports.getProducts = (req, res, next) => { 
     Product
-    .findAll()
+    .returnProducts()
     .then(products=>{
             res.render('admin/products', {
             products: products,
@@ -19,7 +19,7 @@ exports.getProducts = (req, res, next) => {
 
 exports.getAddProduct = (req, res,next) => { 
     // res.sendFile(path.join(rootDir,'views','add-product.html')); 
-    res.render('add-product', {
+    res.render('admin/add-product', {
         title: 'Add Product', 
         pageTitle: 'Add Product', 
         path: '/add-product'})
@@ -32,16 +32,11 @@ exports.postAddProduct = (req,res,next) => {
     const price = req.body.price;
     const description = req.body.description;
 
-    req.user.createProduct({
-        title:title,
-        price:price,
-        imageUrl:imageUrl,
-        description:description
-    })
-    res.redirect('/admin/products')
+    const product = new Product(title,price,imageUrl,description);
+    product.save()
+    .then(result => {
+        res.redirect('/admin/products')
 
-    .then((result) => {
-        // res.redirect('/admin/products')
     })
     .catch((err)=>{console.log(err)})
 
@@ -49,7 +44,7 @@ exports.postAddProduct = (req,res,next) => {
 
 exports.getEditProduct = (req,res,next) => {
     Product
-    .findByPk(req.params.productID)
+    .findById(req.params.productID)
     .then(product => {
             res.render('admin/edit-product', {
                 product: product,
@@ -64,40 +59,36 @@ exports.getEditProduct = (req,res,next) => {
 }
 
 exports.updateProduct = (req,res,next) => {
-    const id= req.body.productId
+    const id= req.body.productID;
     const title = req.body.title;
     const imageUrl = req.body.imageUrl;
     const price = req.body.price;
     const description = req.body.description;
-    Product.findByPk(id)
-    .then((product => {
-        product.title = title,
-        product.imageUrl = imageUrl,
-        product.price = price,
-        product.description= description
-        return product.save()
-    }))
-    .then((result) => {
-        console.log(result)
-        res.redirect('/admin/products');
+    const updatedProduct = {
+        title:title,
+        imageUrl:imageUrl,
+        price:price,
+        description:description
+    }
 
+    Product.updateProduct(id,updatedProduct)
+    .then((result) => {
+        res.redirect('/admin/products')
     })
-    .catch((err) => {console.log(err)})
+    .catch(err=>console.log(err));
 
 
 }
 
 exports.deleteProduct=  (req,res,next) =>{
     const id= req.body.productID;
-    Product.findByPk(id)
-    .then((product) => {
-        product.destroy();
+    Product.deleteProduct(id)
+    .then(() => {
+        res.redirect('/admin/products')
     })
-    .then((result)=>{
-        console.log('deleted');
-        res.redirect('/admin/products');
-    })
-    .catch((err)=>{console.log(err)})
+    .catch(err=>console.log(err));
+
+    
 
     
 }

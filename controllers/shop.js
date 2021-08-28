@@ -8,7 +8,7 @@ const CartItem = require('../models/cart-item')
 
 exports.getProducts = (req, res, next) => {   
     Product
-    .findAll()
+    .returnProducts()
     .then(products=>{
             res.render('../views/shop.ejs', {
             products: products,
@@ -23,8 +23,9 @@ exports.getProducts = (req, res, next) => {
 
 exports.getProduct = (req,res,next) => {
      const id= req.params.productID;
-      Product.findByPk(id)
+      Product.findById(id)
               .then((product) => {
+                  console.log(product)
                     res.render('shop/view-product', {
                     product: product, 
                     pageTitle: product.title,
@@ -39,6 +40,7 @@ exports.getProduct = (req,res,next) => {
 }
 
 exports.getCart = (req,res,next) => {
+    console.log('were here')
     req.user
     .getCart()
     .then((cart) => {
